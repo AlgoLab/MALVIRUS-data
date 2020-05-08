@@ -1,0 +1,8 @@
+{
+	"status": "Precomputed",
+	"last_time": "2020-05-08 11:26:03",
+	"output": {
+		  "vcf": "/jobs/vcf/NCBI-SARS-CoV-2-20200508-112603/run.cleaned.vcf",
+		  "reference": "/jobs/vcf/NCBI-SARS-CoV-2-20200508-112603/reference.fasta"
+	}
+}
