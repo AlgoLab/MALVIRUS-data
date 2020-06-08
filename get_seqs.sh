@@ -117,7 +117,7 @@ cat <<EOF > $INFO
 {
 	"filename": "/jobs//$VCF",
 	"id": "$IDD",
-	"description": "SARS-CoV-2 precomputed VCF and ref downloaded from NCBI on $(date +%Y-%m-%d).\n List of genomes included: $(cat $ACC_FILENAME | tr '\n' ', ' | sed 's/,$//')",
+	"description": "SARS-CoV-2 precomputed VCF and ref downloaded from NCBI on $(date +%Y-%m-%d).\n List of genomes included: $(cat $ACC_FILENAME | tr '\n' ',' | sed 's/,$//' | sed 's/,/, /g')",
 	"submission_time": $(date +%s),
      	"alias": "NCBI-SARS-CoV-2-$DATE_FMT",
 	"reference": "/jobs/$REF",
@@ -135,7 +135,7 @@ git commit -m """[AUTO] SARS-CoV-2 NCBI - $(date +%Y-%m-%d) automatic update
 This release comprises $NO_OF_GENOMES SARS-CoV-2 genomes downloaded from NCBI.
 
 List of accession keys of each genome in this release:
-$(grep "^>" $SEQ_FILENAME | cut -d' ' -f1 | tr -d '>' | tr '\n' ', ')
+$(grep "^>" $SEQ_FILENAME | cut -d' ' -f1 | tr -d '>' | tr '\n' ', ' | sed 's/,$//' | sed 's/,/, /g')
 """
 # git push
 echo "done."
