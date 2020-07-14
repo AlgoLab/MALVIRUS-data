@@ -1,4 +1,18 @@
-#!/bin/sh
+#!/bin/bash
+
+echo -n "Compiling required software..."
+pushd $(pwd)/software > /dev/null
+make &> /dev/null
+popd > /dev/null
+pushd $(pwd)/software/snp-sites-dir > /dev/null
+autoreconf -i -f &> /dev/null
+./configure --prefix=$(pwd)/../ &> /dev/null
+make &> /dev/null
+make install &> /dev/null
+popd > /dev/null
+echo "done."
+
+export PATH=$(pwd)/software/bin:$(pwd)/software:$PATH
 
 # DATE_FMT is used as part of the directory name
 # LAST_TIME is used in info.json and status.json
