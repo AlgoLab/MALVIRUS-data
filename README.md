@@ -15,7 +15,7 @@ git clone --recursive git@github.com:AlgoLab/MALVIRUS-data.git
 Create and activate the conda environment shipped with this repository.
 
 ```bash
-conda env create -f environment.yaml
+conda env create -f environment.yml
 conda activate malvirus-data
 ```
 
