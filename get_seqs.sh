@@ -61,13 +61,21 @@ if [ -f $ACC_FILENAME.bkp ]; then
     fi
 fi
 
-echo -n "Downloading complete genomes sequences..."
+echo "Downloading complete genomes sequences..."
 # Format the sequences
 tr '\n' ',' < $ACC_FILENAME > $ACC_FILENAME.temp
 sed -i 's/,$//' $ACC_FILENAME.temp
+echo "There are" $(wc -l $ACC_FILENAME) "sequences to download"
 
 # Download the sequences
-efetch -format fasta -db nucleotide -id $(cat $ACC_FILENAME.temp) > $SEQ_FILENAME.temp
+rm -f $SEQ_FILENAME.temp
+split -t "," -l 1000 -a 3 $ACC_FILENAME.temp $ACC_FILENAME.temp.chunk_
+for f in $ACC_FILENAME.temp.chunk_*
+do
+	efetch -format fasta -db nucleotide -id $(cat $f) >> $SEQ_FILENAME.temp
+	echo "Downloaded" $(grep -c "^>" $SEQ_FILENAME.temp) "sequences"
+done
+rm -f $ACC_FILENAME.temp.chunk_*
 
 # Clean the sequences
 clean_fasta.py clean $SEQ_FILENAME.temp > $SEQ_FILENAME
@@ -144,12 +152,15 @@ echo "done"
 echo -n "Creating git commit..."
 NO_OF_GENOMES=$(grep -c "^>" $SEQ_FILENAME)
 git add $UNIQ_ID > /dev/null
-git commit -m """[AUTO] SARS-CoV-2 NCBI - $(date +%Y-%m-%d) automatic update
+cat <<EOF > commit-msg
+[AUTO] SARS-CoV-2 NCBI - $(date +%Y-%m-%d) automatic update
 
 This release comprises $NO_OF_GENOMES SARS-CoV-2 genomes downloaded from NCBI.
 
 List of accession keys of each genome in this release:
-$(grep "^>" $SEQ_FILENAME | cut -d' ' -f1 | tr -d '>' | tr '\n' ', ' | sed 's/,$//' | sed 's/,/, /g')
-"""
+EOF
+grep "^>" $SEQ_FILENAME | cut -d' ' -f1 | tr -d '>' | tr '\n' ', ' | sed 's/,$//' | sed 's/,/, /g' | fold -s -w 120 >> commit-msg
+git commit -F commit-msg
+
 # git push
 echo "done."
