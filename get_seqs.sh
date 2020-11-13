@@ -20,12 +20,11 @@ export PATH=$(pwd)/software/bin:$(pwd)/software:$PATH
 DATE_FMT=$(date +%Y%m%d-%H%M%S)
 LAST_TIME=$(python3 -c 'import datetime; print(str(datetime.datetime.today().replace(microsecond=0)))')
 
-THREADS=3
+THREADS=8
 ACC_FILENAME="accession.id.list"
 REF_FILENAME="reference.fasta"
 SEQ_FILENAME="seqs.fasta"
-GFF_FILENAME="sars-cov-2.gff"
-GFF_URL="https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/009/858/895/GCF_009858895.2_ASM985889v3/GCF_009858895.2_ASM985889v3_genomic.gff.gz"
+GFF_FILENAME="GCF_009858895.2_ASM985889v3_genomic.gff"
 REF_ID="NC_045512"
 
 # Check if we already have a list of genomes we downloaded
@@ -43,21 +42,14 @@ esearch -db nucleotide -query "SARS-CoV-2 [ORGN] AND complete genome [TITLE]" |
     grep -v $REF_ID > $ACC_FILENAME
 echo "done."
 
-# Check if the reference exists already
-if [ ! -f $REF_FILENAME ]; then
-    echo -n "reference.fasta not found, downloading..."
-    efetch -format fasta -db nucleotide -id $REF_ID > $REF_FILENAME
-    echo "done."
-fi
-
 # Check if we have some new nucleotide in the acc list
 if [ -f $ACC_FILENAME.bkp ]; then
     diff $ACC_FILENAME $ACC_FILENAME.bkp > /dev/null
 
     if [ $? -eq 0 ]; then
-	echo "No new complete genomes found in entrez."
-	mv $ACC_FILENAME.bkp $ACC_FILENAME
-	exit 1
+        echo "No new complete genomes found in entrez."
+        mv $ACC_FILENAME.bkp $ACC_FILENAME
+        exit 1
     fi
 fi
 
@@ -82,11 +74,6 @@ clean_fasta.py clean $SEQ_FILENAME.temp > $SEQ_FILENAME
 rm $ACC_FILENAME.temp $SEQ_FILENAME.temp
 echo "done."
 
-# Download the annotation
-echo -n "Downloading the annotation..."
-wget -q -O - $GFF_URL | gunzip -c > $GFF_FILENAME
-echo "done."
-
 # Create the directory
 echo -n "Creating the db..."
 IDD=NCBI-SARS-CoV-2-$DATE_FMT
@@ -94,9 +81,9 @@ UNIQ_ID=vcf/$IDD
 mkdir -p $UNIQ_ID
 
 # Copy the info
-cp $REF_FILENAME $UNIQ_ID
+cp refs/NC_045512.2/$REF_FILENAME $UNIQ_ID
 cp $SEQ_FILENAME $UNIQ_ID
-cp $GFF_FILENAME $UNIQ_ID
+cp refs/NC_045512.2/$GFF_FILENAME $UNIQ_ID
 
 # Compute the VCF
 REF=$UNIQ_ID/$REF_FILENAME
@@ -115,7 +102,8 @@ fill_msa $MSA.unfilled > $MSA
 snp-sites -rmcv -o $TMPDIR/run $MSA
 format_vcf.py clean $TMPDIR/run.vcf | cut -f 1-9,11- > $TMPDIR/run.1.vcf
 samtools faidx $REF
-format_vcf.py freq $TMPDIR/run.1.vcf $REF.fai > $VCF
+format_vcf.py freq $TMPDIR/run.1.vcf $REF.fai 2 > $VCF
+gzip -9v $VCF
 
 echo "done."
 
@@ -129,7 +117,7 @@ cat <<EOF > $STAT
 	"status": "Precomputed",
 	"last_time": "$LAST_TIME",
 	"output": {
-		  "vcf": "/jobs/$VCF",
+		  "vcf": "/jobs/$VCF.gz",
 		  "reference": "/jobs/$REF"
 	}
 }
@@ -137,13 +125,26 @@ EOF
 
 cat <<EOF > $INFO
 {
-	"filename": "/jobs//$VCF",
+	"filename": "/jobs/$VCF.gz",
 	"id": "$IDD",
 	"description": "SARS-CoV-2 precomputed VCF and ref downloaded from NCBI on $(date +%Y-%m-%d).\n List of genomes included: $(cat $ACC_FILENAME | tr '\n' ',' | sed 's/,$//' | sed 's/,/, /g')",
 	"submission_time": $(date +%s),
-     	"alias": "NCBI-SARS-CoV-2-$DATE_FMT",
+	"alias": "NCBI-SARS-CoV-2-$DATE_FMT",
 	"reference": "/jobs/$REF",
-	"gtf": "/jobs/$GFF"
+	"gtf": "/jobs/$GFF",
+	"internal_ref": {
+		"snpEff": {
+			"id": "NC_045512.2"
+		},
+		"reference": {
+			"file": "NC_045512.2/reference.fasta"
+		},
+		"id": "NC_045512.2",
+		"annotation": {
+			"file": "NC_045512.2/GCF_009858895.2_ASM985889v3_genomic.gff"
+		},
+		"alias": "SARS-CoV-2, Severe acute respiratory syndrome coronavirus 2 isolate Wuhan-Hu-1"
+	}
 }
 EOF
 

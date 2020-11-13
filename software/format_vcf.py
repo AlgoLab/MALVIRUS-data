@@ -6,6 +6,7 @@ from pysam import VariantFile
 def add_freqs():
     vcf_path = sys.argv[2]
     fai_path = sys.argv[3]
+    min_samples = int(sys.argv[4]) if len(sys.argv) == 5 else 0
 
     vcf = VariantFile(vcf_path, 'r', drop_samples = False)
 
@@ -25,10 +26,13 @@ def add_freqs():
         for sample_name in record.samples:
             curr_gt = record.samples[sample_name]['GT'][0]
             n_gts[curr_gt] = n_gts[curr_gt]+1 if curr_gt in n_gts else 1
+        # if any([n < min_samples for n in n_gts.values()]):
+        if len(n_gts) == 2 and n_gts[1] < min_samples:
+            continue
         for gt in n_gts:
             n_gts[gt] /= tot_samples
             n_gts[gt] = round(n_gts[gt], 5)
-        freq_string = ','.join([str(n_gts[i]) for i in range(1,tot_alleles)])
+        # freq_string = ','.join([str(n_gts[i]) for i in range(1,tot_alleles)])
         alt_freqs = [n_gts[i] for i in range(1,tot_alleles)]
         record.chrom = ref_name
         record.info.__setitem__("AF", alt_freqs)
