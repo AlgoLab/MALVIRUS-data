@@ -10,6 +10,7 @@
         },
         "annotation": {
             "file": "NC_045512.2/GCF_009858895.2_ASM985889v3_genomic.gff"
-        }
+        },
+        "pangolin": true
     }
 ]
