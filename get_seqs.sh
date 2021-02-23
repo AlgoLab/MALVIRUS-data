@@ -1,18 +1,15 @@
 #!/bin/bash
 
+# exit when any command fails
+set -e
+
 echo -n "Compiling required software..."
-pushd $(pwd)/software > /dev/null
+pushd ./software > /dev/null
 make &> /dev/null
-popd > /dev/null
-pushd $(pwd)/software/snp-sites-dir > /dev/null
-autoreconf -i -f &> /dev/null
-./configure --prefix=$(pwd)/../ &> /dev/null
-make &> /dev/null
-make install &> /dev/null
 popd > /dev/null
 echo "done."
 
-export PATH=$(pwd)/software/bin:$(pwd)/software:$PATH
+export PATH=${PWD}/software:$PATH
 
 # DATE_FMT is used as part of the directory name
 # LAST_TIME is used in info.json and status.json
@@ -28,10 +25,8 @@ GFF_FILENAME="GCF_009858895.2_ASM985889v3_genomic.gff"
 REF_ID="NC_045512"
 
 # Check if we already have a list of genomes we downloaded
-# previously.  If so, move it.
-if [ -f $ACC_FILENAME ]; then
-    mv $ACC_FILENAME $ACC_FILENAME.bkp
-fi
+# previously.  If so, remove it.
+rm -f $ACC_FILENAME
 
 # Get IDS of the complete genomes for SARS-CoV-2
 # We filter out the reference genome since we need it in
@@ -39,19 +34,9 @@ fi
 echo -n "Querying entrez..."
 esearch -db nucleotide -query "SARS-CoV-2 [ORGN] AND complete genome [TITLE]" |
     efetch -format acc |
-    grep -v $REF_ID > $ACC_FILENAME
+    grep -v $REF_ID |
+    grep -vFf bad-sequence-ids.list > $ACC_FILENAME
 echo "done."
-
-# Check if we have some new nucleotide in the acc list
-if [ -f $ACC_FILENAME.bkp ]; then
-    diff $ACC_FILENAME $ACC_FILENAME.bkp > /dev/null
-
-    if [ $? -eq 0 ]; then
-        echo "No new complete genomes found in entrez."
-        mv $ACC_FILENAME.bkp $ACC_FILENAME
-        exit 1
-    fi
-fi
 
 echo "Downloading complete genomes sequences..."
 # Format the sequences
@@ -82,8 +67,8 @@ mkdir -p $UNIQ_ID
 
 # Copy the info
 cp refs/NC_045512.2/$REF_FILENAME $UNIQ_ID
-cp $SEQ_FILENAME $UNIQ_ID
 cp refs/NC_045512.2/$GFF_FILENAME $UNIQ_ID
+mv $SEQ_FILENAME $UNIQ_ID
 
 # Compute the VCF
 REF=$UNIQ_ID/$REF_FILENAME
@@ -92,12 +77,12 @@ GFF=$UNIQ_ID/$GFF_FILENAME
 VCF=$UNIQ_ID/run.cleaned.vcf
 INFO=$UNIQ_ID/info.json
 STAT=$UNIQ_ID/status.json
-TMPDIR=/tmp/$UNIQ_ID/
+TMPDIR=/tmp/$UNIQ_ID
 MSA=$TMPDIR/output.msa
 
 mkdir -p $TMPDIR
 
-mafft --thread $THREADS --auto --reorder --mapout --keeplength --addfragments $SEQ $REF > $MSA.unfilled 2> /dev/null
+mafft --thread $THREADS --6merpair --maxambiguous 0.05 --keeplength --addfragments $SEQ $REF > $MSA.unfilled 2> /dev/null
 fill_msa $MSA.unfilled > $MSA
 snp-sites -rmcv -o $TMPDIR/run $MSA
 format_vcf.py clean $TMPDIR/run.vcf | cut -f 1-9,11- > $TMPDIR/run.1.vcf
@@ -107,8 +92,7 @@ gzip -9v $VCF
 
 echo "done."
 
-rm $UNIQ_ID/*.map
-rm $UNIQ_ID/*.fai
+rm -f $UNIQ_ID/*.fai
 
 echo -n "Creating info.json and status.json..."
 
@@ -143,7 +127,8 @@ cat <<EOF > $INFO
 		"annotation": {
 			"file": "NC_045512.2/GCF_009858895.2_ASM985889v3_genomic.gff"
 		},
-		"alias": "SARS-CoV-2, Severe acute respiratory syndrome coronavirus 2 isolate Wuhan-Hu-1"
+		"alias": "SARS-CoV-2, Severe acute respiratory syndrome coronavirus 2 isolate Wuhan-Hu-1",
+		"pangolin": true
 	}
 }
 EOF
@@ -151,7 +136,7 @@ EOF
 echo "done"
 
 echo -n "Creating git commit..."
-NO_OF_GENOMES=$(grep -c "^>" $SEQ_FILENAME)
+NO_OF_GENOMES=$(grep -c "^>" $SEQ)
 git add $UNIQ_ID > /dev/null
 cat <<EOF > commit-msg
 [AUTO] SARS-CoV-2 NCBI - $(date +%Y-%m-%d) automatic update
@@ -160,8 +145,9 @@ This release comprises $NO_OF_GENOMES SARS-CoV-2 genomes downloaded from NCBI.
 
 List of accession keys of each genome in this release:
 EOF
-grep "^>" $SEQ_FILENAME | cut -d' ' -f1 | tr -d '>' | tr '\n' ', ' | sed 's/,$//' | sed 's/,/, /g' | fold -s -w 120 >> commit-msg
+grep "^>" $SEQ | cut -d' ' -f1 | tr -d '>' | tr '\n' ', ' | sed 's/,$//' | sed 's/,/, /g' | fold -s -w 120 >> commit-msg
 git commit -F commit-msg
 
+rm -f commit-msg accession.id.list
 # git push
 echo "done."

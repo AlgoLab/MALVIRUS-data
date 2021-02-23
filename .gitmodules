@@ -1,3 +1,0 @@
-[submodule "software/snp-sites-dir"]
-	path = software/snp-sites-dir
-	url = git@github.com:ldenti/snp-sites.git
