@@ -1,0 +1,7 @@
+dataset.log
+lineage_report.csv
+pangolin.log
+sequences.fa*
+msa/
+selected_lineage_report.csv
+selected_seqs.txt

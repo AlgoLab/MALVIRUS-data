@@ -1,0 +1,131 @@
+── Attaching packages ─────────────────────────────────────── tidyverse 1.3.0 ──
+✔ ggplot2 3.3.3     ✔ purrr   0.3.4
+✔ tibble  3.1.1     ✔ dplyr   1.0.5
+✔ tidyr   1.1.3     ✔ stringr 1.4.0
+✔ readr   1.4.0     ✔ forcats 0.5.1
+── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ dplyr::filter() masks stats::filter()
+✖ dplyr::lag()    masks stats::lag()
+# A tibble: 79,206 x 6
+   taxon                      lineage probability pangoLEARN_versi… status note 
+   <chr>                      <fct>         <dbl> <date>            <fct>  <chr>
+ 1 LC528232.2_Severe_acute_r… B                 1 2021-03-16        passe… <NA> 
+ 2 LC528233.2_Severe_acute_r… B.5               1 2021-03-16        passe… <NA> 
+ 3 LC529905.1_Severe_acute_r… B                 1 2021-03-16        passe… <NA> 
+ 4 LC534418.1_Severe_acute_r… B                 1 2021-03-16        passe… <NA> 
+ 5 LC534419.2_Severe_acute_r… B.12              1 2021-03-16        passe… <NA> 
+ 6 LC542809.1_Severe_acute_r… B                 1 2021-03-16        passe… <NA> 
+ 7 LC542976.1_Severe_acute_r… A                 1 2021-03-16        passe… <NA> 
+ 8 MN908947.3_Severe_acute_r… B                 1 2021-03-16        passe… <NA> 
+ 9 MN938384.1_Severe_acute_r… A                 1 2021-03-16        passe… <NA> 
+10 MN975262.1_Severe_acute_r… A                 1 2021-03-16        passe… <NA> 
+# … with 79,196 more rows
+    taxon              lineage       probability    pangoLEARN_version  
+ Length:79206       B.1.2  :16844   Min.   :0.000   Min.   :2021-03-16  
+ Class :character   B.1    : 9390   1st Qu.:1.000   1st Qu.:2021-03-16  
+ Mode  :character   D.2    : 9117   Median :1.000   Median :2021-03-16  
+                    B.1.1.7: 5764   Mean   :0.986   Mean   :2021-03-16  
+                    B.1.429: 2655   3rd Qu.:1.000   3rd Qu.:2021-03-16  
+                    A.1    : 1835   Max.   :1.000   Max.   :2021-03-16  
+                    (Other):33601                                       
+       status          note          
+ passed_qc:78098   Length:79206      
+ fail     : 1108   Class :character  
+                   Mode  :character  
+                                     
+                                     
+                                     
+                                     
+# A tibble: 78,098 x 6
+   taxon                      lineage probability pangoLEARN_versi… status note 
+   <chr>                      <fct>         <dbl> <date>            <fct>  <chr>
+ 1 LC528232.2_Severe_acute_r… B                 1 2021-03-16        passe… <NA> 
+ 2 LC528233.2_Severe_acute_r… B.5               1 2021-03-16        passe… <NA> 
+ 3 LC529905.1_Severe_acute_r… B                 1 2021-03-16        passe… <NA> 
+ 4 LC534418.1_Severe_acute_r… B                 1 2021-03-16        passe… <NA> 
+ 5 LC534419.2_Severe_acute_r… B.12              1 2021-03-16        passe… <NA> 
+ 6 LC542809.1_Severe_acute_r… B                 1 2021-03-16        passe… <NA> 
+ 7 LC542976.1_Severe_acute_r… A                 1 2021-03-16        passe… <NA> 
+ 8 MN908947.3_Severe_acute_r… B                 1 2021-03-16        passe… <NA> 
+ 9 MN938384.1_Severe_acute_r… A                 1 2021-03-16        passe… <NA> 
+10 MN975262.1_Severe_acute_r… A                 1 2021-03-16        passe… <NA> 
+# … with 78,088 more rows
+    taxon              lineage       probability pangoLEARN_version  
+ Length:78098       B.1.2  :16844   Min.   :1    Min.   :2021-03-16  
+ Class :character   B.1    : 9390   1st Qu.:1    1st Qu.:2021-03-16  
+ Mode  :character   D.2    : 9117   Median :1    Median :2021-03-16  
+                    B.1.1.7: 5764   Mean   :1    Mean   :2021-03-16  
+                    B.1.429: 2655   3rd Qu.:1    3rd Qu.:2021-03-16  
+                    A.1    : 1835   Max.   :1    Max.   :2021-03-16  
+                    (Other):32493                                    
+       status          note          
+ passed_qc:78098   Length:78098      
+ fail     :    0   Class :character  
+                   Mode  :character  
+                                     
+                                     
+                                     
+                                     
+# A tibble: 625 x 2
+   lineage     cnt
+   <fct>     <int>
+ 1 B.1.2     16844
+ 2 B.1        9390
+ 3 D.2        9117
+ 4 B.1.1.7    5764
+ 5 B.1.429    2655
+ 6 A.1        1835
+ 7 B.1.596    1763
+ 8 B.1.243    1734
+ 9 B.1.1      1701
+10 B.1.1.519  1647
+# … with 615 more rows
+# A tibble: 5 x 2
+  lineage   cnt
+  <fct>   <int>
+1 B.1.1.7  5764
+2 P.1        53
+3 B.1.525    32
+4 A.23.1     14
+5 B.1.351    44
+# A tibble: 1 x 1
+  `sum(nsel)`
+        <dbl>
+1       11805
+Joining, by = "lineage"
+# A tibble: 11,805 x 6
+   taxon                      lineage probability pangoLEARN_versi… status note 
+   <chr>                      <fct>         <dbl> <date>            <fct>  <chr>
+ 1 LC528233.2_Severe_acute_r… B.5               1 2021-03-16        passe… <NA> 
+ 2 LC534418.1_Severe_acute_r… B                 1 2021-03-16        passe… <NA> 
+ 3 LC534419.2_Severe_acute_r… B.12              1 2021-03-16        passe… <NA> 
+ 4 MT012098.1_Severe_acute_r… B                 1 2021-03-16        passe… <NA> 
+ 5 MT027064.1_Severe_acute_r… B                 1 2021-03-16        passe… <NA> 
+ 6 MT044257.1_Severe_acute_r… A                 1 2021-03-16        passe… <NA> 
+ 7 MT114414.1_Severe_acute_r… B.4               1 2021-03-16        passe… <NA> 
+ 8 MT114415.1_Severe_acute_r… B.4               1 2021-03-16        passe… <NA> 
+ 9 MT114418.1_Severe_acute_r… B                 1 2021-03-16        passe… <NA> 
+10 MT114419.1_Severe_acute_r… B                 1 2021-03-16        passe… <NA> 
+# … with 11,795 more rows
+# A tibble: 625 x 2
+   lineage   cnt
+   <fct>   <int>
+ 1 B.1.1.7   250
+ 2 B.1.2     100
+ 3 B.1        93
+ 4 D.2        91
+ 5 P.1        53
+ 6 B          50
+ 7 A          50
+ 8 A.1        50
+ 9 B.11       50
+10 A.2        50
+# … with 615 more rows
+# A tibble: 5 x 2
+  lineage   cnt
+  <fct>   <int>
+1 B.1.1.7   250
+2 P.1        53
+3 B.1.525    32
+4 A.23.1     14
+5 B.1.351    44

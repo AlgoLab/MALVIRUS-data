@@ -1,0 +1,6 @@
+channels:
+  - bioconda
+  - defaults
+dependencies:
+  - snp-sites=2.5.1
+  - tabix=0.2.6

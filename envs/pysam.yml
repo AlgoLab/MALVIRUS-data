@@ -1,0 +1,7 @@
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - pysam=0.16.0.1
+  - tabix=0.2.6

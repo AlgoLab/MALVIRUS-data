@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import sys
+from collections import defaultdict
 from pysam import VariantFile
 
 def add_freqs():
@@ -17,26 +18,54 @@ def add_freqs():
     vcf.header.add_line("##INFO=<ID=AF,Number=A,Type=Float,Description=\"Estimated allele frequency in the range (0,1)\">")
     print('\n'.join(str(vcf.header).split('\n')[:-1]))
 
+    removed_variants = 0
+    removed_some_alt = 0
+    tot_removed_alleles = 0
+    tot_removed_genotypes = 0
+    next_milestone = 1000
     for record in vcf:
         if record.pos <= 50 or record.pos >= int(ref_len)-50:
             continue
-        tot_alleles = len(record.alleles)
-        n_gts = {}
-        tot_samples = len(record.samples)
-        for sample_name in record.samples:
-            curr_gt = record.samples[sample_name]['GT'][0]
-            n_gts[curr_gt] = n_gts[curr_gt]+1 if curr_gt in n_gts else 1
-        # if any([n < min_samples for n in n_gts.values()]):
-        if len(n_gts) == 2 and n_gts[1] < min_samples:
-            continue
+        if record.pos > next_milestone:
+            print("Reached position", record.pos, file=sys.stderr)
+            next_milestone += 1000
+
+        n_gts = defaultdict(int)
+        low_samples = defaultdict(list)
+        for sample in record.samples.itervalues():
+            curr_gt = sample.allele_indices[0]
+            n_gts[curr_gt] += 1
+            if curr_gt != 0 and n_gts[curr_gt] < min_samples:
+                low_samples[curr_gt].append(sample)
+
+        to_delete = set([gt for gt in n_gts if n_gts[gt] < min_samples])
+        if len(to_delete) > 0:
+            if len(n_gts) - len(to_delete) == 1:
+                removed_variants += 1
+                continue
+            tot_removed_alleles += len(to_delete)
+            removed_some_alt += 1
+
+            for gt in to_delete:
+                for sample in low_samples[gt]:
+                    sample.allele_indices = (0,)
+                n_gts[0] += n_gts[gt]
+                tot_removed_genotypes += n_gts[gt]
+                n_gts[gt] = 0
+
+        tot_alleles = len(n_gts)
+        tot_samples = sum(n_gts.values())
         for gt in n_gts:
             n_gts[gt] /= tot_samples
-            n_gts[gt] = round(n_gts[gt], 5)
-        # freq_string = ','.join([str(n_gts[i]) for i in range(1,tot_alleles)])
-        alt_freqs = [n_gts[i] for i in range(1,tot_alleles)]
+            n_gts[gt] = round(n_gts[gt], 6)
+        alt_freqs = [n_gts[i] for i in n_gts if i > 0]
         record.chrom = ref_name
         record.info.__setitem__("AF", alt_freqs)
-        print(record, end='')
+        print(record, end='', flush=False)
+    print("removed_variants=", removed_variants, file=sys.stderr)
+    print("removed_some_alt=", removed_some_alt, file=sys.stderr)
+    print("tot_removed_alleles=", tot_removed_alleles, file=sys.stderr)
+    print("tot_removed_genotypes=", tot_removed_genotypes, file=sys.stderr)
 
 def clean_header():
     vcf_path = sys.argv[2]
