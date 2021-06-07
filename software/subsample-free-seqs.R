@@ -17,19 +17,38 @@ d <- readr::read_csv(
               col_types = cols(
                 lineage = col_factor(),
                 status = col_factor(),
-                note = col_character()
+                note = col_character(),
+                conflict = col_double(),
+                ambiguity_score = col_double()
               )
             );
 d
 summary(d)
 
 d <- ( d
-  %>% filter(probability == 1 & status == "passed_qc")
+  %>% filter(status == "passed_qc")
 )
 d
 summary(d)
 
-special_lineages <- c("B.1.1.7", "B.1.351", "P.1", "A.23.1", "B.1.525")
+special_lineages <- c(
+  "A.23.1",
+  "AV.1",
+  "B.1.1.7",
+  "B.1.1.318",
+  "B.1.324.1",
+  "B.1.351",
+  "B.1.427",
+  "B.1.429",
+  "B.1.525",
+  "B.1.526",
+  "B.1.617.1",
+  "B.1.617.2",
+  "B.1.617.3",
+  "P.1",
+  "P.2",
+  "P.3"
+)
 
 compute_nsel <- function(lineage, cnt) {
   pmin(cnt,

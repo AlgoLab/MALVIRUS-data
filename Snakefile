@@ -67,18 +67,19 @@ rule pangolin_ncbi_virus_seqs:
         lineages = f"seqs/{curr_date}-SARS-CoV-2-NCBIVirus/lineage_report.csv",
         lineages_bz2 = f"seqs/{curr_date}-SARS-CoV-2-NCBIVirus/lineage_report.csv.bz2",
     params:
+        outdir = f"seqs/{curr_date}-SARS-CoV-2-NCBIVirus",
         min_len = 29000,
         max_ambig = 0.01,
     log:
         out = f"seqs/{curr_date}-SARS-CoV-2-NCBIVirus/pangolin.log",
         out_bz2 = f"seqs/{curr_date}-SARS-CoV-2-NCBIVirus/pangolin.log.bz2",
     conda: "envs/pangolin.yml"
-    shadow: "minimal"
-    threads: 1
+    threads: 8
     shell: """
-    pangolin -v &> {log.out}
+    pangolin --update &> {log.out}
+    pangolin -v &>> {log.out}
     pangolin -pv &>> {log.out}
-    pangolin --outfile {output.lineages} --threads {threads} --max-ambig {params.max_ambig} --min-length {params.min_len} {input.seqs} &>> {log.out}
+    pangolin --no-temp --alignment --outdir {params.outdir} --outfile lineage_report.csv --threads {threads} --max-ambig {params.max_ambig} --min-length {params.min_len} {input.seqs} &>> {log.out}
     bzip2 -9k {output.lineages} {log.out}
     """
 
