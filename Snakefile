@@ -43,21 +43,35 @@ rule copy_from_ref:
 
 rule download_ncbi_virus_seqs:
     output:
-        fa = "seqs/{curr_date}-SARS-CoV-2-NCBIVirus/sequences.fa.gz",
-        ids = "seqs/{curr_date}-SARS-CoV-2-NCBIVirus/accessions.txt.bz2",
+        archive = temp("seqs/{curr_date}-SARS-CoV-2-NCBIVirus/archive.zip")
     log:
         out = "seqs/{curr_date}-SARS-CoV-2-NCBIVirus/dataset.log",
         out_bz2 = "seqs/{curr_date}-SARS-CoV-2-NCBIVirus/dataset.log.bz2",
     shadow: "shallow"
-    conda: "envs/ncbi.yml"
     shell: """
     rm -f archive.zip &> {log.out}
     ./software/datasets download virus genome taxon SARS2 --host human --complete-only --exclude-cds --exclude-gpff --exclude-pdb --exclude-protein --filename archive.zip &>> {log.out}
-    rm -rf README.md ncbi_dataset/ &>> {log.out}
-    7z x archive.zip &>> {log.out}
-    gzip -9c ncbi_dataset/data/genomic.fna > {output.fa}
+    mv archive.zip {output.archive}
     bzip2 -9k {log.out}
-    zgrep '^>' {output.fa} | cut -d ' ' -f 1 | sed 's/>//' | bzip2 -9 > {output.ids}
+    """
+
+rule prepare_ncbi_virus_seqs:
+    input:
+        archive = "seqs/{curr_date}-SARS-CoV-2-NCBIVirus/archive.zip"
+    output:
+        fa = "seqs/{curr_date}-SARS-CoV-2-NCBIVirus/sequences.fa.gz",
+        ids = "seqs/{curr_date}-SARS-CoV-2-NCBIVirus/accessions.txt.bz2",
+    log:
+        out = "seqs/{curr_date}-SARS-CoV-2-NCBIVirus/dataset-pre.log",
+    shadow: "shallow"
+    conda: "envs/pigz.yml"
+    threads: 8
+    shell: """
+    rm -rf ncbi_dataset/ &> {log.out}
+    unzip {input.archive} ncbi_dataset/data/genomic.fna &>> {log.out}
+    pigz -9k -p {threads} ncbi_dataset/data/genomic.fna
+    mv ncbi_dataset/data/genomic.fna.gz {output.fa}
+    grep '^>' ncbi_dataset/data/genomic.fna | cut -d ' ' -f 1 | sed 's/>//' | bzip2 -9 > {output.ids}
     """
 
 rule pangolin_ncbi_virus_seqs:

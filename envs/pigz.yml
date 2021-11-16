@@ -1,5 +1,4 @@
 channels:
   - conda-forge
-  - defaults
 dependencies:
-  - p7zip=16.02
+  - pigz=2.3.4

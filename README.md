@@ -4,6 +4,11 @@ SARS-CoV-2 variant catalog accompanying MALVIRUS.
 The workflow `Snakefile` updates the NCBI-based SARS-CoV-2 catalog integrated in [MALVIRUS](https://github.com/algolab/malvirus).
 Only users that have write access to the [MALVIRUS-data](https://github.com/AlgoLab/MALVIRUS-data) repo (this one) should run this script.
 
+## Requirements
+
+Utility `unzip` must be available system-wide since the one available in `conda` does not handle zip files created by NCBI.
+The one provided by Debian (and derivative) packages works correctly.
+
 ## Instructions
 
 Clone this repository:
