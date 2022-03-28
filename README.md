@@ -20,8 +20,8 @@ git clone git@github.com:AlgoLab/MALVIRUS-data.git
 Create and activate the conda environment shipped with this repository:
 
 ```bash
-conda env create -f environment.yml
-conda activate malvirus-data-snakemake
+conda env create -f environment.yml --prefix ./local-env
+conda activate ./local-env
 ```
 
 Finally, run Snakemake

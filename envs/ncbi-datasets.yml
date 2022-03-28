@@ -1,5 +1,4 @@
 channels:
   - conda-forge
 dependencies:
-  - r-base=4.0.3
-  - r-tidyverse=1.3.0
+  - ncbi-datasets-cli=13.6.0

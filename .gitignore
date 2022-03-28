@@ -2,3 +2,4 @@
 vcf/NCBI-*/seqs.fasta
 vcf/*/*.gff.db
 software/fill_msa
+local-env/

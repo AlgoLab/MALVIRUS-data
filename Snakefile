@@ -48,9 +48,10 @@ rule download_ncbi_virus_seqs:
         out = "seqs/{curr_date}-SARS-CoV-2-NCBIVirus/dataset.log",
         out_bz2 = "seqs/{curr_date}-SARS-CoV-2-NCBIVirus/dataset.log.bz2",
     shadow: "shallow"
+    conda: "envs/ncbi-datasets.yml"
     shell: """
     rm -f archive.zip &> {log.out}
-    ./software/datasets download virus genome taxon SARS2 --host human --complete-only --exclude-cds --exclude-gpff --exclude-pdb --exclude-protein --filename archive.zip &>> {log.out}
+    datasets download virus genome taxon SARS2 --host human --complete-only --exclude-cds --exclude-gpff --exclude-pdb --exclude-protein --filename archive.zip &>> {log.out}
     mv archive.zip {output.archive}
     bzip2 -9k {log.out}
     """
